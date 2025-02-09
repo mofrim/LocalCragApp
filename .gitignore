@@ -3,3 +3,10 @@ node_modules
 .husky/_/
 docker-compose.override.yml
 .env
+.husky/_/dev.cfg
+dev.cfg
+dot-env
+.env
+certbot/
+mc
+bak/

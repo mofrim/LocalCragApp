@@ -1,0 +1,20 @@
+# vim: ft=dockerfile
+FROM python
+
+RUN pip install pipenv
+ENV PYTHONPATH=/localcragapp/src
+RUN mkdir /.local && chown 1000:1000 /.local
+
+USER 1000:1000
+WORKDIR /app
+# Copy build files
+COPY ./server/.flake8 /app/.flake8
+COPY ./server/pyproject.toml /app/pyproject.toml
+COPY ./server/Pipfile /app/Pipfile
+COPY ./server/Pipfile.lock /app/Pipfile.lock
+# Install Python dependencies
+RUN pipenv install
+USER root
+RUN chown -R 1000:1000 /app
+USER 1000:1000
+WORKDIR /app/src

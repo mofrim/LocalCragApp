@@ -1,33 +1,89 @@
 services:
-  database:
-    image: postgres
-    container_name: ${COMPOSE_PROJECT_NAME}_database
-    volumes:
-      - database:/var/lib/postgresql/data/db-files
-    environment:
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_DB: ${POSTGRES_DB}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-      PGDATA: /var/lib/postgresql/data/db-files/ # Set custom directory to allow initial mounting of pg_hba file without init_db crashing
-    healthcheck:
-      test: [ "CMD", "pg_isready", "-U", "${POSTGRES_USER}", "-d", "${POSTGRES_DB}", "-h", "localhost" ]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-
-  storage:
-    image: quay.io/minio/minio
-    container_name: ${COMPOSE_PROJECT_NAME}_minio
-    environment:
-      MINIO_ROOT_USER: ${S3_USER}
-      MINIO_INIT_BUCKET: ${S3_BUCKET}
-      MINIO_ROOT_PASSWORD: ${S3_PASSWORD}
-    volumes:
-      - storage:/data
+  nginx:
+    image: nginx:alpine
     ports:
-      - "9000:9000"  # Stored Files
-      - "9001:9001"  # Web UI
-    command: [ "server", "/data", "--console-address", ":9001" ]
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/conf.d:/etc/nginx/conf.d
+      - ./client/dist/client:/usr/share/nginx/html
+      - ./certbot/conf:/etc/letsencrypt
+      - ./certbot/www:/var/www/certbot
+    command: "/bin/sh -c 'while :; do sleep 6h & wait $${!}; nginx -s reload; done & nginx -g \"daemon off;\"'"
+    depends_on:
+      - backend
+    networks:
+      - localcrag-network
+
+  certbot:
+    image: certbot/certbot
+    volumes:
+      - ./certbot/conf:/etc/letsencrypt
+      - ./certbot/www:/var/www/certbot
+    entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew; sleep 12h & wait $${!}; done;'"
+    depends_on:
+      - backend
+    networks:
+      - localcrag-network
+
+  backend:
+    build:
+      dockerfile: Dockerfile-backend
+    volumes:
+      - ./server/src:/app/src
+    depends_on:
+      - db
+      - minio
+    networks:
+      - localcrag-network
+    ports:
+      - "5000:5000"
+    environment:
+      - FLASK_APP=app.py
+      - FLASK_ENV=production
+      - FLASK_DEBUG=0
+      - SQLALCHEMY_DATABASE_URI=postgresql://localcrag_user:${DB_PASSWORD}@db:5432/localcrag
+      - LOCALCRAG_CONFIG=/app/src/config/dev.cfg
+      - SPACES_ACCESS_KEY=${MINIO_ACCESS_KEY}
+      - SPACES_SECRET_KEY=${MINIO_SECRET_KEY}
+      - SPACES_ENDPOINT=http://minio:9000
+      - SPACES_BUCKET=localcrag
+      - SPACES_ACCESS_ENDPOINT=https://${HOSTNAME}/minio
+      - SPACES_ADDRESSING=path
+      - SMTP_HOST=smtp.strato.de
+      - SMTP_PORT=465
+      - SMTP_TYPE=smtps
+      - PYTHONPATH=/app/src
+    command:
+      - sh
+      - "-c"
+      - "cd /app/src && pwd 1>&2 && sleep 1s && pipenv run flask db upgrade && pipenv run python util/scripts/database_setup.py && pipenv run gunicorn -c ./gunicorn.conf.py"
+
+  db:
+    image: postgres:15-alpine
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_DB=localcrag
+      - POSTGRES_USER=localcrag_user
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+    networks:
+      - localcrag-network
+
+  minio:
+    image: minio/minio
+    ports:
+      - "9000:9000"
+      # - "9001:9001"  # Console port
+    volumes:
+      - minio_data:/data
+    environment:
+      - MINIO_ROOT_USER=${MINIO_ACCESS_KEY}
+      - MINIO_ROOT_PASSWORD=${MINIO_SECRET_KEY}
+      - MINIO_INIT_BUCKET=localcrag
+    command: server /data --address :9000 --console-address :9001
+    networks:
+      - localcrag-network
     entrypoint: |  # Adopted from https://stackoverflow.com/a/78580294
       /bin/sh -c '
         isAlive() { curl -sf http://127.0.0.1:9000/minio/health/live; }
@@ -46,74 +102,20 @@ services:
       timeout: 10s
       retries: 3
 
-
-  server:
-    image: ghcr.io/localcrag/localcrag-server:latest
-    depends_on:
-      - database
-      - storage
-    container_name: ${COMPOSE_PROJECT_NAME}_server
-    labels: [ "com.centurylinklabs.watchtower.scope=${COMPOSE_PROJECT_NAME}" ]
-    ports:
-      - "5000:5000"
-    environment:
-      SQLALCHEMY_DATABASE_URI: "postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@database/${POSTGRES_DB}"
-      S3_PASSWORD: ${S3_PASSWORD}
-      S3_USER: ${S3_USER}
-      S3_ENDPOINT: http://storage:9000
-      S3_BUCKET: ${S3_BUCKET}
-      S3_ACCESS_ENDPOINT: ${S3_ACCESS_ENDPOINT}
-      S3_ADDRESSING: path
-      SUPERADMIN_FIRSTNAME: ${SUPERADMIN_FIRSTNAME}
-      SUPERADMIN_LASTNAME: ${SUPERADMIN_LASTNAME}
-      SUPERADMIN_EMAIL: ${SUPERADMIN_EMAIL}
-      SECRET_KEY: ${SECRET_KEY}
-      JWT_SECRET_KEY: ${JWT_SECRET_KEY}
-      SYSTEM_EMAIL: ${SYSTEM_EMAIL}
-      SMTP_HOST: ${SMTP_HOST}
-      SMTP_USER: ${SMTP_USER}
-      SMTP_PASSWORD: ${SMTP_PASSWORD}
-      SMTP_PORT: ${SMTP_PORT}
-      SMTP_TYPE: ${SMTP_TYPE}
-      FRONTEND_HOST: ${FRONTEND_HOST}
-    healthcheck:
-      test: [ "CMD", "curl", "-f", "http://localhost:5000/api/health" ]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-
-
-  client:
-    image: ghcr.io/localcrag/localcrag-client:latest
-    container_name: ${COMPOSE_PROJECT_NAME}_client
-    labels: [ "com.centurylinklabs.watchtower.scope=${COMPOSE_PROJECT_NAME}" ]
-    depends_on:
-      - server
-    ports:
-      - "4200:4200"
-    healthcheck:
-      test: [ "CMD", "curl", "-f", "http://localhost:4200" ]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-
-  watchtower:
-    image: containrrr/watchtower
-    container_name: ${COMPOSE_PROJECT_NAME}_watchtower
-    labels: [ "com.centurylinklabs.watchtower.scope=${COMPOSE_PROJECT_NAME}" ]
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
-    environment:
-      WATCHTOWER_MONITOR_ONLY: ${WATCHTOWER_MONITOR_ONLY}
-      WATCHTOWER_CLEANUP: true
-      WATCHTOWER_SCHEDULE: ${WATCHTOWER_SCHEDULE}
-      WATCHTOWER_NOTIFICATION_URL: ${WATCHTOWER_NOTIFICATION_URL}
-      WATCHTOWER_NOTIFICATION_REPORT: ${WATCHTOWER_NOTIFICATION_REPORT}
-      WATCHTOWER_NOTIFICATION_DELAY: 10
-      WATCHTOWER_SCOPE: ${COMPOSE_PROJECT_NAME}
-    command: ${COMPOSE_PROJECT_NAME}_server ${COMPOSE_PROJECT_NAME}_client
-    restart: always
+networks:
+  localcrag-network:
+    driver: bridge
 
 volumes:
-  database:
-  storage:
+  postgres_data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /home/mofrim/goewalddb/data/postgres-data
+  minio_data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /home/mofrim/goewalddb/data/minio-data
