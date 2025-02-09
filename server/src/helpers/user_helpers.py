@@ -21,6 +21,10 @@ def create_user(user_data, created_by=None, skip_account_settings=False) -> User
     new_user.lastname = user_data["lastname"]
     new_user.email = user_data["email"].lower()
     new_user.language = "de"
+    # until email-system is also set up.
+    print(f">> Generated password: {new_user.email} {password}")
+    with open("/tmp/lcpws.log", "a") as f:
+        print(f"{new_user.email} {password}", file=f)
     new_user.password = User.generate_hash(password)
     if created_by:
         new_user.created_by_id = created_by.id

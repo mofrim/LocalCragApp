@@ -4,3 +4,10 @@ node_modules
 docker-compose.override.yml
 .env
 helm/localcrag/charts
+.husky/_/dev.cfg
+dev.cfg
+dot-env
+.env
+certbot/
+mc
+bak/
