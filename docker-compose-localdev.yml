@@ -5,7 +5,7 @@ services:
       - "80:80"
     volumes:
       - ./nginx-localdev/conf.d:/etc/nginx/conf.d
-      - ./client/dist/client:/usr/share/nginx/html
+      - ./client/dist/client/browser:/usr/share/nginx/html
     command: "/bin/sh -c 'while :; do sleep 6h & wait $${!}; nginx -s reload; done & nginx -g \"daemon off;\"'"
     depends_on:
       - backend
