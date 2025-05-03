@@ -1,0 +1,102 @@
+services:
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx-localdev/conf.d:/etc/nginx/conf.d
+      - ./client/dist/client:/usr/share/nginx/html
+    command: "/bin/sh -c 'while :; do sleep 6h & wait $${!}; nginx -s reload; done & nginx -g \"daemon off;\"'"
+    depends_on:
+      - backend
+    networks:
+      - localcrag-network
+
+  backend:
+    build:
+      dockerfile: Dockerfile-backend
+    volumes:
+      - ./server/src:/app/src
+    depends_on:
+      - db
+      - minio
+    networks:
+      - localcrag-network
+    ports:
+      - "5000:5000"
+    environment:
+      - FLASK_APP=app.py
+      - FLASK_ENV=production
+      - FLASK_DEBUG=0
+      - SQLALCHEMY_DATABASE_URI=postgresql://localcrag_user:${DB_PASSWORD}@db:5432/localcrag
+      - LOCALCRAG_CONFIG=/app/src/config/dev.cfg
+      - SPACES_ACCESS_KEY=${MINIO_ACCESS_KEY}
+      - SPACES_SECRET_KEY=${MINIO_SECRET_KEY}
+      - SPACES_ENDPOINT=http://minio:9000
+      - SPACES_BUCKET=localcrag
+      - SPACES_ACCESS_ENDPOINT=http://${HOSTNAME}/minio
+      - SPACES_ADDRESSING=path
+      - SMTP_HOST=smtp.strato.de
+      - SMTP_PORT=465
+      - SMTP_TYPE=smtps
+      - PYTHONPATH=/app/src
+    command:
+      - sh
+      - "-c"
+      - "cd /app/src && pwd 1>&2 && sleep 1s && pipenv run flask db upgrade && pipenv run python util/scripts/database_setup.py && pipenv run gunicorn -c ./gunicorn.conf.py"
+
+  db:
+    image: postgres:15-alpine
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_DB=localcrag
+      - POSTGRES_USER=localcrag_user
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+    networks:
+      - localcrag-network
+
+  minio:
+    image: minio/minio
+    ports:
+      - "9000:9000"
+      # - "9001:9001"  # Console port
+    volumes:
+      - minio_data:/data
+    environment:
+      - MINIO_ROOT_USER=${MINIO_ACCESS_KEY}
+      - MINIO_ROOT_PASSWORD=${MINIO_SECRET_KEY}
+      - MINIO_INIT_BUCKET=localcrag
+    command: server /data --address :9000 --console-address :9001
+    networks:
+      - localcrag-network
+    entrypoint: |  # Adopted from https://stackoverflow.com/a/78580294
+      /bin/sh -c '
+        isAlive() { curl -sf http://127.0.0.1:9000/minio/health/live; }
+        minio $$0 "$$@" --quiet & echo $$! > /tmp/minio.pid
+        while ! isAlive; do sleep 0.1; done
+        mc alias set minio http://127.0.0.1:9000 $$MINIO_ROOT_USER $$MINIO_ROOT_PASSWORD
+        mc mb minio/$$MINIO_INIT_BUCKET || true
+        mc anonymous set public minio/$$MINIO_INIT_BUCKET
+        kill -s INT $$(cat /tmp/minio.pid) && rm /tmp/minio.pid
+        while isAlive; do sleep 0.1; done
+        exec minio $$0 "$$@"
+      '
+
+networks:
+  localcrag-network:
+    driver: bridge
+
+volumes:
+  postgres_data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /home/mofrim/src/localcrag/bak/postgres-data
+  minio_data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /home/mofrim/src/localcrag/bak/minio-data
