@@ -60,7 +60,7 @@ services:
       - "cd /app/src && pwd 1>&2 && sleep 1s && pipenv run flask db upgrade && pipenv run python util/scripts/database_setup.py && pipenv run gunicorn -c ./gunicorn.conf.py"
 
   db:
-    image: postgres
+    image: postgres:15-alpine
     volumes:
       - postgres_data:/var/lib/postgresql/data
     environment:
