@@ -10,3 +10,4 @@ dot-env
 certbot/
 mc
 bak/
+.direnv/
