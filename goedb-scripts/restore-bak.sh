@@ -2,9 +2,9 @@
 
 set -e
 
-if [ $# -ne 1 ] || [ ! -e "$1" ]; then
+if [ $# -ne 1 ] || [ ! -e "$1" ] || [ ! -e ../../data/postgres-data ]; then
   echo "$# Important things are missing!"
-  echo "usage (in repo root!): $0 tarball"
+  echo "usage (in lc-repo root!): $0 tarball"
   exit 1
 fi
 
