@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 domains=(goewalddb.de www.goewalddb.de)
 rsa_key_size=4096
