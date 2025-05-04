@@ -119,7 +119,7 @@
                     icon="pi pi-wrench"
                     (click)="menu.toggle($event)"
                     severity="secondary"
-                    *ngIf="currentUser.id !== user.id && !user.admin"
+                    *ngIf="currentUser.id !== user.id && !user.superadmin"
                     [text]="true"
                     class="user-actions"
                     label="{{ t('userActions') }}"
