@@ -2,7 +2,7 @@ services:
   nginx:
     image: nginx:alpine
     ports:
-      - "80:80"
+      - "8080:80"
     volumes:
       - ./nginx-localdev/conf.d:/etc/nginx/conf.d
       - ./client/dist/client/browser:/usr/share/nginx/html
@@ -14,7 +14,7 @@ services:
 
   backend:
     build:
-      dockerfile: Dockerfile-backend
+      dockerfile: Dockerfile-backend-localdev
     volumes:
       - ./server/src:/app/src
     depends_on:
@@ -34,7 +34,7 @@ services:
       - SPACES_SECRET_KEY=${MINIO_SECRET_KEY}
       - SPACES_ENDPOINT=http://minio:9000
       - SPACES_BUCKET=localcrag
-      - SPACES_ACCESS_ENDPOINT=http://${HOSTNAME}/minio
+      - SPACES_ACCESS_ENDPOINT=http://${HOSTNAME}:8080/minio
       - SPACES_ADDRESSING=path
       - SMTP_HOST=smtp.strato.de
       - SMTP_PORT=465
@@ -46,18 +46,23 @@ services:
       - "cd /app/src && pwd 1>&2 && sleep 1s && pipenv run flask db upgrade && pipenv run python util/scripts/database_setup.py && pipenv run gunicorn -c ./gunicorn.conf.py"
 
   db:
-    image: postgres:15-alpine
+    # build:
+    #   dockerfile: Dockerfile-pg1517
+    # image: postgres:15-alpine
+    image: postgres:17.4-alpine
+    container_name: db
     volumes:
       - postgres_data:/var/lib/postgresql/data
     environment:
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
       - POSTGRES_DB=localcrag
       - POSTGRES_USER=localcrag_user
-      - POSTGRES_PASSWORD=${DB_PASSWORD}
     networks:
       - localcrag-network
 
   minio:
     image: minio/minio
+    container_name: minio
     ports:
       - "9000:9000"
       # - "9001:9001"  # Console port
@@ -93,10 +98,10 @@ volumes:
     driver_opts:
       type: none
       o: bind
-      device: /home/mofrim/src/localcrag/bak/postgres-data
+      device: /home/frido/c0de/webdev/006-goewalddb/localcrag/bak/postgres-data
   minio_data:
     driver: local
     driver_opts:
       type: none
       o: bind
-      device: /home/mofrim/src/localcrag/bak/minio-data
+      device: /home/frido/c0de/webdev/006-goewalddb/localcrag/bak/minio-data
