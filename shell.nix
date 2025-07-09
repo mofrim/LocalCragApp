@@ -11,6 +11,7 @@ pkgs.mkShell {
   buildInputs = with pkgs; [
     (python311.withPackages(ps: with ps; [
       flask
+      requests
     ]))
     nodejs_22
     pipenv
