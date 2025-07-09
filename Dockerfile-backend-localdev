@@ -1,0 +1,16 @@
+# vim: ft=dockerfile
+FROM python:3.12
+
+RUN pip install pipenv
+ENV PYTHONPATH=/app/src
+WORKDIR /app
+RUN mkdir .local
+
+# Copy build files
+COPY ./server/.flake8 /app/.flake8
+COPY ./server/pyproject.toml /app/pyproject.toml
+COPY ./server/Pipfile /app/Pipfile
+COPY ./server/Pipfile.lock /app/Pipfile.lock
+# Install Python dependencies
+RUN pipenv install
+WORKDIR /app/src
