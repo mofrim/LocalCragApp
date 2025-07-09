@@ -28,7 +28,7 @@ set +x
 
 # TODO: add error checking
 echo ">> Backing up DB..."
-DBNAME="$(docker ps | grep db | sed 's/.*\(\localcragapp-db.*\)$/\1/')"
+DBNAME="$(docker ps | grep -- "-db-" | sed 's/.*\(\localcragapp-db.*\)$/\1/')"
 set -x
 docker exec $DBNAME pg_dump -U localcrag_user localcrag > ./bak/db-backup.sql
 cd ../data/
@@ -67,7 +67,7 @@ echo ">> Creating final tarball..."
 FINALBALLNAME="localcrag-bak-$(date +%Y_%m_%d-%H%M).tar.gz"
 set -x
 tar -pczf $FINALBALLNAME ./bak
-rm -rf ./bak
+sudo rm -rf ./bak
 set +x
 
 echo ">> backup_all.sh done \\o/"
