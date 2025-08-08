@@ -30,6 +30,21 @@ import { selectInstanceName } from '../../../ngrx/selectors/instance-settings.se
 import { ControlGroupDirective } from '../../shared/forms/control-group.directive';
 import { FormControlDirective } from '../../shared/forms/form-control.directive';
 import { IfErrorDirective } from '../../shared/forms/if-error.directive';
+import Quill from 'quill';
+
+/**
+ * register custom link format to quill-editor for handling geo-protocol URIs
+ */
+const Link = Quill.import('formats/link');
+class CustomLink extends Link {
+  static sanitize(url: string) {
+    if (url.startsWith('geo:')) {
+      return url;
+    }
+    return super.sanitize(url);
+  }
+}
+Quill.register(CustomLink, true);
 
 /**
  * Form component for creating, editing and deleting blog posts.
