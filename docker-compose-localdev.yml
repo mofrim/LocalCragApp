@@ -6,7 +6,7 @@ services:
     volumes:
       - ./nginx-localdev/conf.d:/etc/nginx/conf.d
       - ./client/dist/client/browser:/usr/share/nginx/html
-    command: "/bin/sh -c 'while :; do sleep 6h & wait $${!}; nginx -s reload; done & nginx -g \"daemon off;\"'"
+    command: '/bin/sh -c ''while :; do sleep 6h & wait $${!}; nginx -s reload; done & nginx -g "daemon off;"'''
     depends_on:
       - backend
     networks:
@@ -75,7 +75,7 @@ services:
     command: server /data --address :9000 --console-address :9001
     networks:
       - localcrag-network
-    entrypoint: |  # Adopted from https://stackoverflow.com/a/78580294
+    entrypoint: | # Adopted from https://stackoverflow.com/a/78580294
       /bin/sh -c '
         isAlive() { curl -sf http://127.0.0.1:9000/minio/health/live; }
         minio $$0 "$$@" --quiet & echo $$! > /tmp/minio.pid
@@ -98,10 +98,10 @@ volumes:
     driver_opts:
       type: none
       o: bind
-      device: /home/frido/c0de/webdev/006-goewalddb/localcrag/bak/postgres-data
+      device: /home/mofrim/c0de/webdev/000-MajorProjects/goewalddb/localcrag/bak/postgres-data
   minio_data:
     driver: local
     driver_opts:
       type: none
       o: bind
-      device: /home/frido/c0de/webdev/006-goewalddb/localcrag/bak/minio-data
+      device: /home/mofrim/c0de/webdev/000-MajorProjects/goewalddb/localcrag/bak/minio-data
