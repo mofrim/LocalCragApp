@@ -3,14 +3,14 @@
 set -e
 
 if [ -e ./bak ]; then
-	echo ">> ./bak dir already exists! Delete or mv it first, plz."
-	exit 1
+	echo ">> ./bak dir already exists! Removing it.."
+        sudo rm -rf ./bak
 elif [ -z "$1" ]; then
 	echo ">> usage: $0 MINIO_SECRET_KEY"
 	exit 1
 fi
 
-mkdir bak
+mkdir -p bak
 
 dled_mc=0
 echo ">> Backing up all data for this localcrag instance."
