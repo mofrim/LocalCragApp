@@ -98,10 +98,12 @@ volumes:
     driver_opts:
       type: none
       o: bind
-      device: /home/mofrim/c0de/webdev/000-MajorProjects/goewalddb/localcrag/bak/postgres-data
+      # device: /home/mofrim/c0de/webdev/000-MajorProjects/goewalddb/localcrag/bak/postgres-data
+      device: /home/frido/c0de/GoewaldDB/000-LocalCragApp/bak/postgres-data
   minio_data:
     driver: local
     driver_opts:
       type: none
       o: bind
-      device: /home/mofrim/c0de/webdev/000-MajorProjects/goewalddb/localcrag/bak/minio-data
+      # device: /home/mofrim/c0de/webdev/000-MajorProjects/goewalddb/localcrag/bak/minio-data
+      device: /home/frido/c0de/GoewaldDB/000-LocalCragApp/bak/minio-data

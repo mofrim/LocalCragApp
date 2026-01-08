@@ -1,5 +1,5 @@
 # vim: ft=dockerfile
-FROM python:3.12
+FROM python:3.11
 
 RUN pip install pipenv
 ENV PYTHONPATH=/app/src
