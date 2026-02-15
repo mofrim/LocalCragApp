@@ -1,10 +1,21 @@
 # vim: ft=dockerfile
-FROM python:3.11
+FROM python:3.14-slim
 
-RUN pip install pipenv
-ENV PYTHONPATH=/app/src
+RUN pip install pipenv;
+ENV PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1 \
+    PIP_NO_CACHE_DIR=1 \
+    WORKDIR=/app \
+    PYTHONPATH=/app/src
 WORKDIR /app
-RUN mkdir .local
+RUN mkdir .local;
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential \
+    libpq-dev \
+    libmagic1 \
+    curl \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*;
 
 # Copy build files
 COPY ./server/.flake8 /app/.flake8
@@ -12,5 +23,12 @@ COPY ./server/pyproject.toml /app/pyproject.toml
 COPY ./server/Pipfile /app/Pipfile
 COPY ./server/Pipfile.lock /app/Pipfile.lock
 # Install Python dependencies
-RUN pipenv install
+RUN pipenv install --system --deploy --ignore-pipfile;
 WORKDIR /app/src
+EXPOSE 5000
+CMD sh -c "\
+    flask db upgrade && \
+    python3 util/scripts/database_setup.py && \
+    cd .. && \
+    gunicorn  --config src/gunicorn.conf.py \
+"

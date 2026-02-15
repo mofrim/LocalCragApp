@@ -54,10 +54,6 @@ services:
       - SMTP_PORT=465
       - SMTP_TYPE=smtps
       - PYTHONPATH=/app/src
-    command:
-      - sh
-      - "-c"
-      - "cd /app/src && pwd 1>&2 && sleep 1s && pipenv run flask db upgrade && pipenv run python util/scripts/database_setup.py && pipenv run gunicorn -c ./gunicorn.conf.py"
 
   db:
     image: postgres:17.4-alpine
@@ -71,10 +67,9 @@ services:
       - localcrag-network
 
   minio:
-    image: minio/minio
+    image: quay.io/minio/minio:RELEASE.2025-06-13T11-33-47Z
     ports:
       - "9000:9000"
-      # - "9001:9001"  # Console port
     volumes:
       - minio_data:/data
     environment:
