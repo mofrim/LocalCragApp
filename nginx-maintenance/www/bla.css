@@ -1,0 +1,64 @@
+@import url('https://fonts.googleapis.com/css2?family=Fira+Sans:wght@300;400;500;600;700&display=swap');
+
+.fira {
+  font-family: 'Fira Sans';
+}
+
+* {
+	text-align: center;
+	font-size: 30px;
+}
+
+.main-page {
+	margin: 200px 100px 20px 100px;
+}
+
+.breathing-container {
+  margin: 70px 100px;
+}
+
+.breathing {
+	/* margin: 20px 100px 70px 100px; */
+  background-color: #3498db;
+  padding: 10px;
+	border-radius: 10px;
+  animation: breathe 2s ease-in-out infinite alternate;
+  width: 100%;
+  /* word-break: break-all; */
+  overflow-wrap: break-word;
+}
+
+/* For large screens, set a maximum width */
+@media (min-width: 1200px) {
+  .breathing {
+    max-width: 1200px; /* Adjust this value as needed */
+    /* margin: 20px auto 70px auto; */
+    margin: 0 auto;
+  }
+}
+
+
+@keyframes breathe {
+  0% {
+    background-color: #3498db;
+    transform: scale(1);
+  }
+  100% {
+    background-color: white;
+    transform: scale(1.05);
+  }
+}
+
+.breathing-logo {
+  animation: breathe-scale 2s ease-in-out infinite alternate;
+  width: 100%;
+}
+
+@keyframes breathe-scale {
+  0% {
+    transform: scale(1);
+  }
+  100% {
+    transform: scale(1.05);
+  }
+}
