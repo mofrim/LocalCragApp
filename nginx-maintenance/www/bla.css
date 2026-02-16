@@ -10,7 +10,7 @@
 }
 
 .main-page {
-	margin: 200px 100px 20px 100px;
+  margin: 200px 0px 100px 0px;
 }
 
 .breathing-container {
@@ -18,13 +18,11 @@
 }
 
 .breathing {
-	/* margin: 20px 100px 70px 100px; */
   background-color: #3498db;
   padding: 10px;
 	border-radius: 10px;
   animation: breathe 2s ease-in-out infinite alternate;
   width: 100%;
-  /* word-break: break-all; */
   overflow-wrap: break-word;
 }
 
@@ -32,10 +30,19 @@
 @media (min-width: 1200px) {
   .breathing {
     max-width: 1200px; /* Adjust this value as needed */
-    /* margin: 20px auto 70px auto; */
     margin: 0 auto;
   }
 }
+
+/* @media (max-width: 767px) { */
+/*   .breathing { */
+/*     margin: 20px; */
+/*   } */
+
+/*   .breathing-container { */ 
+/*     margin: 20px; */
+/*   } */
+/* } */
 
 
 @keyframes breathe {
