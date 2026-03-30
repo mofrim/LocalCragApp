@@ -4,6 +4,8 @@ services:
     ports:
       - "80:80"
       - "443:443"
+    environment:
+      TZ: Europe/Berlin
     volumes:
       - ./nginx/conf.d:/etc/nginx/conf.d
       - ./client/dist/client/browser:/usr/share/nginx/html
