@@ -1,18 +1,22 @@
 services:
   nginx:
     image: nginx:alpine
+    container_name: lc-nginx
     ports:
       - "8080:80"
     volumes:
       - ./nginx-localdev/conf.d:/etc/nginx/conf.d
       - ./client/dist/client/browser:/usr/share/nginx/html
     command: '/bin/sh -c ''while :; do sleep 6h & wait $${!}; nginx -s reload; done & nginx -g "daemon off;"'''
+    environment:
+      TZ: Europe/Berlin
     depends_on:
       - backend
     networks:
       - localcrag-network
 
   backend:
+    container_name: lc-backend
     build:
       dockerfile: Dockerfile-backend-localdev
       # dockerfile: server/Dockerfile
@@ -51,7 +55,7 @@ services:
     #   dockerfile: Dockerfile-pg1517
     # image: postgres:15-alpine
     image: postgres:17.4-alpine
-    container_name: db
+    container_name: lc-db
     volumes:
       - postgres_data:/var/lib/postgresql/data
     environment:
@@ -64,7 +68,7 @@ services:
   minio:
     # image: minio/minio
     image: quay.io/minio/minio:RELEASE.2025-06-13T11-33-47Z
-    container_name: minio
+    container_name: lc-minio
     ports:
       - "9000:9000"
       # - "9001:9001"  # Console port
