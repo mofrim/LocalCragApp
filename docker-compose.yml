@@ -1,6 +1,7 @@
 services:
   nginx:
     image: nginx:alpine
+    container_name: lc-nginx
     ports:
       - "80:80"
       - "443:443"
@@ -19,6 +20,7 @@ services:
 
   certbot:
     image: certbot/certbot
+    container_name: lc-certbot
     volumes:
       - ./certbot/conf:/etc/letsencrypt
       - ./certbot/www:/var/www/certbot
@@ -31,6 +33,7 @@ services:
   backend:
     build:
       dockerfile: Dockerfile-backend
+    container_name: lc-backend
     volumes:
       - ./server/src:/app/src
     depends_on:
@@ -59,6 +62,7 @@ services:
 
   db:
     image: postgres:17.4-alpine
+    container_name: lc-db
     volumes:
       - postgres_data:/var/lib/postgresql/data
     environment:
@@ -70,6 +74,7 @@ services:
 
   minio:
     image: quay.io/minio/minio:RELEASE.2025-06-13T11-33-47Z
+    container_name: lc-minio
     ports:
       - "9000:9000"
     volumes:
