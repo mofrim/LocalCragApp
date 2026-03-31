@@ -41,8 +41,6 @@ services:
       - minio
     networks:
       - localcrag-network
-    ports:
-      - "5000:5000"
     environment:
       - FLASK_APP=app.py
       - FLASK_ENV=production
@@ -75,8 +73,6 @@ services:
   minio:
     image: quay.io/minio/minio:RELEASE.2025-06-13T11-33-47Z
     container_name: lc-minio
-    ports:
-      - "9000:9000"
     volumes:
       - minio_data:/data
     environment:
