@@ -16,7 +16,7 @@ services:
     depends_on:
       - backend
     networks:
-      - localcrag-network
+      - lc-network
 
   certbot:
     image: certbot/certbot
@@ -28,7 +28,7 @@ services:
     depends_on:
       - backend
     networks:
-      - localcrag-network
+      - lc-network
 
   backend:
     build:
@@ -40,7 +40,7 @@ services:
       - db
       - minio
     networks:
-      - localcrag-network
+      - lc-network
     environment:
       - FLASK_APP=app.py
       - FLASK_ENV=production
@@ -68,7 +68,7 @@ services:
       - POSTGRES_USER=localcrag_user
       - POSTGRES_PASSWORD=${DB_PASSWORD}
     networks:
-      - localcrag-network
+      - lc-network
 
   minio:
     image: pgsty/minio:RELEASE.2026-03-25T00-00-00Z
@@ -81,7 +81,7 @@ services:
       - MINIO_INIT_BUCKET=localcrag
     command: server /data --address :9000 --console-address :9001
     networks:
-      - localcrag-network
+      - lc-network
     entrypoint: |  # Adopted from https://stackoverflow.com/a/78580294
       /bin/sh -c '
         isAlive() { curl -sf http://127.0.0.1:9000/minio/health/live; }
@@ -101,7 +101,8 @@ services:
       retries: 3
 
 networks:
-  localcrag-network:
+  lc-network:
+    name: lc-network
     driver: bridge
 
 volumes:
