@@ -19,7 +19,6 @@ services:
     container_name: lc-backend
     build:
       dockerfile: Dockerfile-backend-localdev
-      # dockerfile: server/Dockerfile
     volumes:
       - ./server/src:/app/src
     depends_on:
@@ -64,8 +63,7 @@ services:
       - localcrag-network
 
   minio:
-    # image: minio/minio
-    image: quay.io/minio/minio:RELEASE.2025-06-13T11-33-47Z
+    image: pgsty/minio:RELEASE.2026-03-25T00-00-00Z
     container_name: lc-minio
     volumes:
       - minio_data:/data
