@@ -28,7 +28,7 @@ set +x
 
 # TODO: add error checking
 echo ">> Backing up DB..."
-DBNAME="$(docker ps | grep -- "-db-" | sed 's/.*\(\localcragapp-db.*\)$/\1/')"
+DBNAME="lc-db"
 set -x
 docker exec $DBNAME pg_dump -U localcrag_user localcrag > ./bak/db-backup.sql
 cd ../data/
