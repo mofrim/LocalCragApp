@@ -6,3 +6,11 @@ docker-compose.override.yml
 helm/localcrag/charts
 .planning/
 .cursor/
+.husky/_/dev.cfg
+dev.cfg
+dot-env
+.env
+certbot/
+mc
+bak/
+.direnv/
