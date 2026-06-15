@@ -108,7 +108,7 @@ export class MenuComponent implements OnInit {
               label: this.translocoService.translate(
                 marker('menu.systemCategory'),
               ),
-              visible: authState.user.moderator,
+              visible: authState.user.admin,
               items: [
                 {
                   icon: 'pi pi-fw pi-file',
@@ -127,7 +127,7 @@ export class MenuComponent implements OnInit {
                   label: this.translocoService.translate(marker('menu.users')),
                   routerLink: '/users',
                   routerLinkActiveOptions: { exact: true },
-                  visible: authState.user.moderator,
+                  visible: authState.user.admin,
                 },
                 {
                   icon: 'pi pi-fw pi-sliders-h',
