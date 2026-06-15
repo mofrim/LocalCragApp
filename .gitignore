@@ -7,3 +7,11 @@ helm/localcrag/charts
 .planning/
 .cursor/
 .vscode/
+.husky/_/dev.cfg
+dev.cfg
+dot-env
+.env
+certbot/
+mc
+bak/
+.direnv/

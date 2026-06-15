@@ -1,0 +1,29 @@
+[Unit]
+Description=LocalCrag Flask App
+After=network.target
+
+[Service]
+User=mofrim
+WorkingDirectory=/home/mofrim/goewald/LocalCragApp/server
+# Get the virtual environment path
+# Environment="LCDIR=/home/mofrim/goewald/LocalCragApp/server/src"
+# Environment="SRVDIR=/home/mofrim/goewald/LocalCragApp/server"
+# Environment="SQLALCHEMY_DATABASE_URI=postgresql://localcrag_user:password@localhost/localcrag"
+# Environment="LOCALCRAG_CONFIG=/localcragapp/src/config/dev.cfg"
+# Environment="SPACES_ACCESS_KEY=localcrag"
+# Environment="SPACES_SECRET_KEY=password"
+# Environment="SPACES_ENDPOINT=http://storage:9000"
+# Environment="SPACES_BUCKET=localcrag"
+# Environment="SPACES_ACCESS_ENDPOINT=http://localhost:9000"
+# Environment="SPACES_ADDRESSING=path"
+# Environment="SMTP_HOST=mails"
+# Environment="SMTP_PORT=1025"
+# Environment="SMTP_TYPE=plain"
+# Environment="PYTHONPATH=$LCDIR"
+# Environment="PATH=$PATH:/home/mofrim/.local/share/virtualenvs/server-L4gSl8bs/bin"
+# Environment="FLASK_APP=app.py"
+# Environment="LOCALCRAG_CONFIG=$LCDIR/dev.cfg"
+ExecStart=/home/mofrim/goewald/LocalCragApp/server/server_start.sh
+
+[Install]
+WantedBy=multi-user.target
