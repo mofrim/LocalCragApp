@@ -9,7 +9,7 @@ user_registered_mail = {
         "copyright": "© LocalCrag. Alle Rechte vorbehalten.",
         "hint": "Wenn der oben angezeigte Button nicht funktioniert, kopiere die unten stehende URL direkt in die "
         "Adresszeile Deines Browsers.",
-        "thanks": "Gleesikische Grüße,",
+        "thanks": "Göwaldige Grüße,",
         "greetings": "Dein LocalCrag Team",
         "subject": "Neuer Benutzer!",
     },
@@ -23,7 +23,7 @@ user_registered_mail = {
         "copyright": "© LocalCrag. All rights reserved.",
         "hint": "If the button shown above does not work, copy the URL below directly into the"
         " address line of your browser.",
-        "thanks": "Greetings from Glees,",
+        "thanks": "Greetings from the Göwald,",
         "greetings": "Your LocalCrag team",
         "subject": "New user",
     },
