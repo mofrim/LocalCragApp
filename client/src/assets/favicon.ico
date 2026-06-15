@@ -1,0 +1,16 @@
+<!doctype html>
+<html lang="de" data-beasties-container>
+  <head>
+    <meta charset="utf-8">
+    <meta name="description" content="Eine Datenbank für alle Boulder im Klettergebiet Göttinger Wald. Plattform für die Outdoor-Boulder-Community von Göttingen. LocalCragApp Instanz.">
+    <meta name="keywords" content="Bouldern, Göttingen, Kletter-Community, Boulder-Community, Sandstein, Felsen, Klettern in Göttingen, Goewald">
+    <title>Boulderdatenbank Göttinger Wald</title>
+    <base href="/">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="icon" type="image/x-icon" id="favIcon">
+  <style>@-webkit-keyframes fa-spin{0%{-webkit-transform:rotate(0deg);transform:rotate(0)}to{-webkit-transform:rotate(359deg);transform:rotate(359deg)}}body{padding:0;margin:0}html{height:100vh;--ticked-bg-color:#eafeee;--ticked-color:var(--p-green-600)}body{height:100vh;font-family:Inter var,-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica,Arial,sans-serif,"Apple Color Emoji","Segoe UI Emoji",Segoe UI Symbol}</style><link rel="stylesheet" href="styles-34WW6ECQ.css" media="print" onload="this.media='all'"><noscript><link rel="stylesheet" href="styles-34WW6ECQ.css"></noscript></head>
+  <body>
+    <h1 style="display: none;">Boulderdatenbank Göttinger Wald - Bouldern im Göttinger Wald</h1>
+    <lc-root></lc-root>
+  <link rel="modulepreload" href="chunk-3Z2RZRO4.js"><link rel="modulepreload" href="chunk-KGJLW6GP.js"><link rel="modulepreload" href="chunk-BAF7YKD7.js"><script src="polyfills-7O5QKMKC.js" type="module"></script><script src="scripts-O4RJFIHT.js" defer></script><script src="main-FYYCN2MZ.js" type="module"></script></body>
+</html>
