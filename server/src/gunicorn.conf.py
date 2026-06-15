@@ -7,7 +7,7 @@ accesslog = "-"
 workers = 4
 worker_tmp_dir = "/dev/shm"
 wsgi_app = "app:app"
-chdir = "src"
+# chdir = "src"
 preload_app = True
 timeout = 60
 
