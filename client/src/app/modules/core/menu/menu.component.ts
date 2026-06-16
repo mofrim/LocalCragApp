@@ -273,8 +273,8 @@ export class MenuComponent implements OnInit, AfterViewInit {
         if (authState.user) {
           const items: MenuItem[] = [];
 
-          // Only add the system category for moderators
-          if (authState.user.moderator) {
+          // Only add the system category for *ADMINS*
+          if (authState.user.admin) {
             const systemItems: MenuItem[] = [
               {
                 icon: 'pi pi-fw pi-file',
@@ -282,6 +282,20 @@ export class MenuComponent implements OnInit, AfterViewInit {
                   marker('menu.menuPages'),
                 ),
                 routerLink: '/pages',
+              },
+              {
+                icon: 'pi pi-fw pi-exclamation-triangle',
+                label: this.translocoService.translate(
+                  marker('menu.appAlerts'),
+                ),
+                routerLink: '/app-alerts',
+              },
+              {
+                icon: 'pi pi-fw pi-envelope',
+                label: this.translocoService.translate(
+                  marker('menu.adminMessages'),
+                ),
+                routerLink: '/admin-messages',
               },
               {
                 icon: 'pi pi-fw pi-bars',
@@ -314,24 +328,6 @@ export class MenuComponent implements OnInit, AfterViewInit {
                 routerLink: '/instance-settings',
               },
             ];
-
-            if (authState.user.admin) {
-              systemItems.splice(1, 0, {
-                icon: 'pi pi-fw pi-exclamation-triangle',
-                label: this.translocoService.translate(
-                  marker('menu.appAlerts'),
-                ),
-                routerLink: '/app-alerts',
-              });
-              systemItems.splice(2, 0, {
-                icon: 'pi pi-fw pi-envelope',
-                label: this.translocoService.translate(
-                  marker('menu.adminMessages'),
-                ),
-                routerLink: '/admin-messages',
-              });
-            }
-
             items.push({
               label: this.translocoService.translate(
                 marker('menu.systemCategory'),

@@ -82,6 +82,7 @@ class GetUser(MethodView):
 
 
 class ChangePassword(MethodView):
+
     @session_required()
     def put(self):
         """
@@ -97,14 +98,16 @@ class ChangePassword(MethodView):
             user.password = User.generate_hash(data["newPassword"])
             db.session.add(user)
             db.session.commit()
-            simple_message = SimpleMessage(ResponseMessage.PASSWORD_CHANGED.value)
+            simple_message = SimpleMessage(
+                ResponseMessage.PASSWORD_CHANGED.value)
             return simple_message_schema.dump(simple_message), 201
         else:
             raise Unauthorized(ResponseMessage.OLD_PASSWORD_INCORRECT.value)
 
 
 class GetUsers(MethodView):
-    @session_required(moderator=True)
+
+    @session_required(admin=True)
     def get(self):
         """
         Returns the list of users.
@@ -129,24 +132,24 @@ class GetEmailTaken(MethodView):
 
 class ResendUserCreateMail(MethodView):
 
-    @session_required(moderator=True)
+    @session_required(admin=True)
     def put(self, user_id):
         """
         Resends the user created mail for a user. The password is re-generated in this step. Only works for
-        inactive users.
+            inactive users.
         """
         user: User = User.find_by_id(user_id)
 
         if user.activated:
             raise BadRequest(ResponseMessage.USER_ALREADY_ACTIVATED.value)
 
-        password = generate_password()
-        user.password = User.generate_hash(password)
-        db.session.add(user)
-        db.session.commit()
-        send_create_user_email(password, user)
+            password = generate_password()
+            user.password = User.generate_hash(password)
+            db.session.add(user)
+            db.session.commit()
+            send_create_user_email(password, user)
 
-        return jsonify(None)
+            return jsonify(None)
 
 
 class DeleteUser(MethodView):  # pragma: no cover
@@ -166,7 +169,8 @@ class DeleteUser(MethodView):  # pragma: no cover
             raise BadRequest(ResponseMessage.CANNOT_DELETE_OWN_USER.value)
 
         if user_to_delete.admin and not request_user.superadmin:
-            raise Unauthorized(ResponseMessage.ONLY_SUPERADMINS_CAN_DELETE_OTHER_ADMINS.value)
+            raise Unauthorized(
+                ResponseMessage.ONLY_SUPERADMINS_CAN_DELETE_OTHER_ADMINS.value)
 
         db.session.delete(user_to_delete)
         db.session.commit()
@@ -178,7 +182,8 @@ class UpdateAccount(MethodView):
     @session_required()
     def put(self):
         user_data = parser.parse(user_args, request)
-        user = User.find_by_email(get_session_identity())  # You can only edit your own user!
+        # You can only edit your own user!
+        user = User.find_by_email(get_session_identity())
 
         email_canonical = user_data["email"].lower()
         user_by_email = User.find_by_email(email_canonical)
@@ -205,6 +210,7 @@ class UpdateAccount(MethodView):
 
 
 class ChangeEmail(MethodView):
+
     def put(self):
         data = parser.parse(new_email_args, request)
         user = User.find_by_new_email_hash(data["newEmailHash"])
@@ -224,7 +230,8 @@ class ChangeEmail(MethodView):
         db.session.commit()
         session = create_session_for_user(user)
         db.session.commit()
-        response = jsonify(auth_response_schema.dump(AuthResponse(ResponseMessage.EMAIL_CHANGED.value, user)))
+        response = jsonify(auth_response_schema.dump(
+            AuthResponse(ResponseMessage.EMAIL_CHANGED.value, user)))
         set_session_cookies(response, session)
         return response, 200
 
@@ -245,7 +252,8 @@ class RegisterUser(MethodView):
         admins = User.get_admins()
         user_count = User.get_user_count()
         for admin in admins:
-            send_user_registered_email(created_user, admin, user_count)
+            if admin.superadmin:
+                send_user_registered_email(created_user, admin, user_count)
 
         return user_schema.dump(created_user), 201
 
@@ -294,7 +302,8 @@ class GetUserGrades(MethodView):
         user_id = User.get_id_by_slug(user_slug)
         grade_col = Line.user_grade_value if instance_settings.display_user_grades else Line.author_grade_value
         query = (
-            db.session.query(Line.type, Line.grade_scale, grade_col, Ascent.flash)
+            db.session.query(Line.type, Line.grade_scale,
+                             grade_col, Ascent.flash)
             .join(Ascent, Ascent.line_id == Line.id)
             .filter(
                 Ascent.created_by_id == user_id,
@@ -327,7 +336,8 @@ class GetUserStatistics(MethodView):
     def get(self, user_slug):
         user = User.find_by_slug(user_slug)
         user_id = user.id
-        excluded_from_rankings = bool(user.account_settings and user.account_settings.exclude_from_rankings)
+        excluded_from_rankings = bool(
+            user.account_settings and user.account_settings.exclude_from_rankings)
         instance_settings = InstanceSettings.return_it()
         display_user_grades = bool(instance_settings.display_user_grades)
 
@@ -378,10 +388,12 @@ class GetUserStatistics(MethodView):
             if ref > 0 and ascent.grade_value > 0:
                 if ascent.grade_value > ref:
                     upgrades += 1
-                    biggest_upgrade_grades = max(biggest_upgrade_grades, ascent.grade_value - ref)
+                    biggest_upgrade_grades = max(
+                        biggest_upgrade_grades, ascent.grade_value - ref)
                 elif ascent.grade_value < ref:
                     downgrades += 1
-                    biggest_downgrade_grades = max(biggest_downgrade_grades, ref - ascent.grade_value)
+                    biggest_downgrade_grades = max(
+                        biggest_downgrade_grades, ref - ascent.grade_value)
 
         flash_percent = round((flash_count / total) * 100, 1) if total else 0.0
         soft_percent = round((soft_count / total) * 100, 1) if total else 0.0
@@ -413,9 +425,11 @@ class GetUserStatistics(MethodView):
             .scalar()
         )
         # Emoji reactions this user placed (Reaction.created_by_id), not reactions on their own content.
-        reactions_count = db.session.query(func.count(Reaction.id)).filter(Reaction.created_by_id == user_id).scalar()
+        reactions_count = db.session.query(func.count(Reaction.id)).filter(
+            Reaction.created_by_id == user_id).scalar()
         gallery_images_uploaded = (
-            db.session.query(func.count(GalleryImage.id)).filter(GalleryImage.created_by_id == user_id).scalar()
+            db.session.query(func.count(GalleryImage.id)).filter(
+                GalleryImage.created_by_id == user_id).scalar()
         )
 
         moderation = {
