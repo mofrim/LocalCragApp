@@ -155,7 +155,7 @@ export class MenuComponent implements OnInit {
           const items: MenuItem[] = [];
 
           // Only add the system category for moderators
-          if (authState.user.moderator) {
+          if (authState.user.admin) {
             items.push({
               label: this.translocoService.translate(
                 marker('menu.systemCategory'),

@@ -106,7 +106,7 @@ class ChangePassword(MethodView):
 
 class GetUsers(MethodView):
     @jwt_required()
-    @check_auth_claims(moderator=True)
+    @check_auth_claims(admin=True)
     def get(self):
         """
         Returns the list of users.
@@ -132,7 +132,7 @@ class GetEmailTaken(MethodView):
 class ResendUserCreateMail(MethodView):
 
     @jwt_required()
-    @check_auth_claims(moderator=True)
+    @check_auth_claims(admin=True)
     def put(self, user_id):
         """
         Resends the user created mail for a user. The password is re-generated in this step. Only works for
@@ -250,7 +250,8 @@ class RegisterUser(MethodView):
         admins = User.get_admins()
         user_count = User.get_user_count()
         for admin in admins:
-            send_user_registered_email(created_user, admin, user_count)
+            if admin.superadmin:
+                send_user_registered_email(created_user, admin, user_count)
 
         return user_schema.dump(created_user), 201
 
