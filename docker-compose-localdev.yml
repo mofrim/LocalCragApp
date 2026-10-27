@@ -24,7 +24,7 @@ services:
       - ./server/src:/app/src
     depends_on:
       - db
-      - minio
+      - storage
     networks:
       - localcrag-network
     environment:
@@ -64,32 +64,37 @@ services:
     networks:
       - localcrag-network
 
-  minio:
-    image: pgsty/minio:RELEASE.2026-03-25T00-00-00Z
-    container_name: ${COMPOSE_PROJECT_NAME}-minio
+  storage:
+    # image: pgsty/minio:RELEASE.2026-03-25T00-00-00Z
+    image: docker.io/pgsty/silo
+    container_name: ${COMPOSE_PROJECT_NAME}-storage
     volumes:
-      - minio_data:/data
+      - silo_data:/data
     environment:
       MINIO_ROOT_USER: ${S3_USER}
       MINIO_ROOT_PASSWORD: ${S3_PASSWORD}
       MINIO_INIT_BUCKET: ${S3_BUCKET}
+      S3_USER: ${S3_USER}
+      S3_BUCKET: ${S3_BUCKET}
+      S3_PASSWORD: ${S3_PASSWORD}
     command: server /data --address :9000 --console-address :9001
     networks:
       - localcrag-network
     entrypoint: | # Adopted from https://stackoverflow.com/a/78580294
       /bin/sh -c '
         isAlive() { curl -sf http://127.0.0.1:9000/minio/health/live; }
-        minio $$0 "$$@" --quiet & echo $$! > /tmp/minio.pid
-        while ! isAlive; do sleep 0.1; done
-        mc alias set minio http://127.0.0.1:9000 $$S3_USER $$S3_PASSWORD
-        mc mb minio/$$S3_BUCKET || true
-        mc anonymous set public minio/$$S3_BUCKET
-        kill -s INT $$(cat /tmp/minio.pid) && rm /tmp/minio.pid
+        silo $$0 "$$@" --quiet & echo $$! > /tmp/silo.pid
+        while ! isAlive; do echo "waiting for silo..." && sleep 0.1; done
+        echo "S3_USER: $$S3_USER"
+        mc alias set silo http://127.0.0.1:9000 $$S3_USER $$S3_PASSWORD
+        mc mb "silo/$$S3_BUCKET" || true
+        mc anonymous set public "silo/$$S3_BUCKET"
+        kill -s INT $$(cat /tmp/silo.pid) && rm /tmp/silo.pid
         while isAlive; do sleep 0.1; done
-        exec minio $$0 "$$@"
+        exec silo $$0 "$$@"
       '
     healthcheck:
-      test: [ "CMD", "curl", "-f", "http://localhost:9000/minio/health/live" ]
+      test: [ "CMD", "curl", "-f", "http://localhost:9000/silo/health/live" ]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -106,7 +111,7 @@ volumes:
       o: bind
       # device: /home/mofrim/c0de/webdev/000-MajorProjects/goewalddb/localcrag/bak/postgres-data
       device: /home/frido/c0de/GoewaldDB/000-LocalCragApp/bak/postgres-data
-  minio_data:
+  silo_data:
     driver: local
     driver_opts:
       type: none
